@@ -1,10 +1,10 @@
-package xslt
+package main_test
 
 import (
+	"github.com/stretchr/testify/assert"
+	xslt "github.com/wamuir/go-xslt"
 	"io/ioutil"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -26,35 +26,35 @@ func mustReadFile(f string) []byte {
 
 func TestNewStylesheet(t *testing.T) {
 
-	xs1, err := NewStylesheet(style1)
+	xs1, err := xslt.NewStylesheet(style1)
 	assert.NotNil(t, xs1)
 	assert.NoError(t, err)
 	defer xs1.Close()
 
-	xs2, err := NewStylesheet(style2)
+	xs2, err := xslt.NewStylesheet(style2)
 	assert.NotNil(t, xs2)
 	assert.NoError(t, err)
 	defer xs2.Close()
 
-	xs3, err := NewStylesheet(nil)
+	xs3, err := xslt.NewStylesheet(nil)
 	assert.Nil(t, xs3)
-	assert.Equal(t, ErrXSLParseFailure, err)
+	assert.Equal(t, xslt.ErrXSLParseFailure, err)
 }
 
 func TestStylesheetClose(t *testing.T) {
 
-	xs1, err := NewStylesheet(style1)
+	xs1, err := xslt.NewStylesheet(style1)
 	assert.NotNil(t, xs1)
 	assert.NoError(t, err)
 	assert.NotPanics(t, xs1.Close)
 
-	xs2 := Stylesheet{}
+	xs2 := xslt.Stylesheet{}
 	assert.NotPanics(t, xs2.Close)
 }
 
 func TestStylesheetTransform(t *testing.T) {
 
-	xs1, err := NewStylesheet(style1)
+	xs1, err := xslt.NewStylesheet(style1)
 	assert.NotNil(t, xs1)
 	assert.NoError(t, err)
 	defer xs1.Close()
@@ -63,7 +63,7 @@ func TestStylesheetTransform(t *testing.T) {
 	assert.Equal(t, result1, res1)
 	assert.NoError(t, err)
 
-	xs2, err := NewStylesheet(style2)
+	xs2, err := xslt.NewStylesheet(style2)
 	assert.NotNil(t, xs2)
 	assert.NoError(t, err)
 	defer xs2.Close()
@@ -72,12 +72,12 @@ func TestStylesheetTransform(t *testing.T) {
 	assert.Equal(t, result2, res2)
 	assert.NoError(t, err)
 
-	xs3, err := NewStylesheet(style1)
+	xs3, err := xslt.NewStylesheet(style1)
 	assert.NotNil(t, xs3)
 	assert.NoError(t, err)
 	defer xs3.Close()
 
 	res3, err := xs3.Transform(nil)
 	assert.Nil(t, res3)
-	assert.Equal(t, ErrXSLTFailure, err)
+	assert.Equal(t, xslt.ErrXSLTFailure, err)
 }

@@ -1,9 +1,8 @@
-package xslt_test
+package main_test
 
 import (
 	"fmt"
-
-	"github.com/wamuir/go-xslt"
+	xslt "github.com/wamuir/go-xslt"
 )
 
 func Example() {
