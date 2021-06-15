@@ -4,17 +4,19 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/wamuir/go-xslt"
 	"io"
 	"log"
 	"net/http"
+	"strings"
+
+	xslt "github.com/wamuir/go-xslt"
 )
 
 const ServerPort = 8090
 
 //var xmlLengthLarge = 195222279
-var xmlLength1MB = 991906
-var xslLength = 1027
+//var xmlLength1MB = 991906
+//var xslLength = 1027
 
 var transCfg = &http.Transport{
 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
@@ -32,9 +34,7 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func doXslt(docURL string, styleURL string) ([]byte, error) {
-	// doc is the document to be transformed
-	// style is the XSL stylesheet to be used for transformation
+func readDocument(docURL string) ([]byte, error) {
 	var buf bytes.Buffer
 	response, err := client.Get(docURL)
 	if err != nil {
@@ -45,35 +45,44 @@ func doXslt(docURL string, styleURL string) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
-	doc := buf.Bytes()
-	if len(doc) != xmlLength1MB {
-		panic("wrong length XML")
+	return buf.Bytes(), nil
+}
+
+func doXslt(docParm string, styleParm string) ([]byte, error) {
+	// doc is the document to be transformed
+	// style is the XSL stylesheet to be used for transformation
+	var document []byte
+	var stylesheet []byte
+
+	if strings.HasPrefix(docParm, "<") {
+		document = []byte(docParm)
+	} else {
+		doc, err := readDocument(docParm)
+		if err != nil {
+			panic(err)
+		}
+		document = doc
 	}
 
-	var buf2 bytes.Buffer
-	response2, err := client.Get(styleURL)
-	if err != nil {
-		panic(err)
-	}
-	defer response2.Body.Close()
-	_, err = io.Copy(&buf2, response2.Body) //use package "io" and "os"
-	if err != nil {
-		panic(err)
-	}
-	style := buf2.Bytes()
-	if len(style) != xslLength {
-		panic("wrong length XSL")
+	if strings.HasPrefix(docParm, "<") {
+		stylesheet = []byte(docParm)
+	} else {
+		style, err := readDocument(styleParm)
+		if err != nil {
+			panic(err)
+		}
+		stylesheet = style
 	}
 
 	// create a new stylesheet from style
-	xs, err := xslt.NewStylesheet(style)
+	xs, err := xslt.NewStylesheet(stylesheet)
 	if err != nil {
 		panic(err)
 	}
 	defer xs.Close()
 
 	// transform the document using the style
-	res, err := xs.Transform(doc)
+	res, err := xs.Transform(document)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +91,7 @@ func doXslt(docURL string, styleURL string) ([]byte, error) {
 	return res, nil
 }
 
-func GetParams(w http.ResponseWriter, r *http.Request) {
+func GetUrlParams(w http.ResponseWriter, r *http.Request) {
 	var doc string
 	var style string
 	if r.URL.Path != "/" {
@@ -140,8 +149,8 @@ func GetParams(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", GetParams)
-	http.HandleFunc("/xslt", GetParams)
+	http.HandleFunc("/", GetUrlParams)
+	http.HandleFunc("/xslt", GetUrlParams)
 	http.HandleFunc("/headers", headers)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", ServerPort), nil); err != nil {
 		log.Fatal(err)

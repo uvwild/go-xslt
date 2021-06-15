@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-const serverURL = "https://localhost:8090/"
+//const serverURL = "https://localhost:8090/"
 const testXML = "https://localhost/xml/pubmed21n0001.xml"
 const testXSL = "https://localhost/xslt/biostar.xsl"
 
