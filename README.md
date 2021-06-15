@@ -10,6 +10,8 @@ go-xslt
 
 `go-xslt` is a Go module that performs basic XSLT 1.0 transformations via Libxslt.
 
+This fork has been extended to take optional URLs as parameters and reads the files from there. Quick and Dirty
+
 # Installation
 
 You'll need the development libraries for libxml2 and libxslt, along with those for liblzma and zlib.  Install these via your package manager. For instance, if using `apt` then:
@@ -18,7 +20,7 @@ You'll need the development libraries for libxml2 and libxslt, along with those 
 
 This module can be installed with the `go get` command:
 
-    go get -u github.com/wamuir/go-xslt
+    go get -u github.com/uvwild/go-xslt
 
 
 # Usage
